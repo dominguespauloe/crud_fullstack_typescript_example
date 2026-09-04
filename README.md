@@ -1,1 +1,0 @@
-# crud_fullstack_typescript_example
