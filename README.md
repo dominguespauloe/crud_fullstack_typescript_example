@@ -123,3 +123,82 @@ async function buscarTarefas(): Promise<void> {
 }
 ```
 
+
+---
+### 🥇Explicando o código
+
+Analisando o arquivo main.ts que criamos, aqui estão os **3 pilares mais importantes** de tipos que você precisa dominar no Front-end:
+
+---
+
+### 🧠 1. Elementos do DOM e Asserção de Tipo (as)
+
+Quando você usa document.getElementById('input-tarefa'), o TypeScript olha para o HTML e pensa: *"Eu sei que isso é um elemento HTML, mas não faço ideia se é um campo de texto, um botão ou uma div"*. Por padrão, ele tipa como HTMLElement | null.
+
+Se você tentar acessar input.value, ele vai dar um erro dizendo que value não existe em HTMLElement. Para resolver isso, usamos a **Asserção de Tipo** com a palavra-chave as:
+
+typescript
+
+```
+const input = document.getElementById('input-tarefa') as HTMLInputElement;
+```
+
+
+**Por que isso é importante ?**
+
+* Ao dizer ao TypeScript que o elemento é um HTMLInputElement, o seu editor de código (como o VS Code) ganha superpoderes. Ele vai te sugerir propriedades específicas de inputs, como .value, .checked, .disabled, etc.  
+* Se fosse um formulário, usaríamos as HTMLFormElement para liberar o método .submit() e o evento onsubmit.
+
+---
+
+### 💡 2. Tipagem de Eventos do Navegador
+
+Quando adicionamos um ouvinte de evento (como um clique ou envio de formulário), a função que lida com isso recebe um objeto de evento. Nós precisamos tipar esse parâmetro para evitar o tipo implícito any:
+
+typescript
+
+```
+form.addEventListener('submit', (e: Event) => {
+  e.preventDefault(); // Agora o TypeScript sabe que o método preventDefault existe!
+});
+```
+
+
+* **Event**: É o tipo genérico para qualquer evento do navegador.  
+* **MouseEvent**: Usado para cliques (click, mousedown), permitindo que você acesse propriedades como e.clientX (posição do mouse).  
+* **KeyboardEvent**: Usado para teclas pressionadas (keyup, keydown), permitindo ler e.key (para saber se o usuário apertou "Enter", por exemplo).
+
+---
+
+
+### 🏗️ 3. Tipando Dados Assíncronos (Promise e Interfaces)
+
+Sempre que fazemos uma requisição com fetch, estamos lidando com funções **assíncronas**. No TypeScript, funções que usam async sempre retornam uma Promise.
+
+Veja como tipamos a função que busca dados da API:
+
+typescript
+
+```
+interface Tarefa {
+  id: number;
+  titulo: string;
+}
+
+async function buscarTarefas(): Promise<void> {
+  const resposta = await fetch(API_URL);
+  const tarefas: Tarefa[] = await resposta.json(); // Mapeando a resposta para o nosso tipo
+  // ... resto do código
+}
+```
+
+
+
+* **Promise\<void\>**:
+  - Significa que a função é assíncrona, mas não "retorna" nenhum valor com return (ela apenas executa uma ação no DOM). Se ela retornasse a lista, o tipo seria Promise\<Tarefa\[\]\>.  
+* **Tarefa\[\]**:
+  - Garante que, ao fazer um tarefas.forEach(tarefa \=\> ...), o TypeScript saiba que cada tarefa possui estritamente um id (número) e um titulo (texto). Se você tentar digitar tarefa.name, o código nem compila, evitando erros em produção.
+
+---
+
+---
